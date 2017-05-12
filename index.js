@@ -57,5 +57,5 @@ module.exports = defaults => {
     });
   };
 
+  return nconf;
 };
-module.exports = nconf;
