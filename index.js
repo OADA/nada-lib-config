@@ -38,7 +38,7 @@ module.exports = defaults => {
     if (!fs.existsSync(config)) {
       throw new Error('Could not find config file: ' + config);
     }
-    conf.use('literal', require(config));
+    nconf.use('literal', require(config));
   }
  
   if (defaults) {
