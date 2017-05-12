@@ -14,44 +14,48 @@
  */
 'use strict';
 
-// We use nconf in dependencies, so we have to play games here. If npm/yarn
-// factors nconf up node_modules then our dependencies get the same nconf
-// instance as we do, allowing them to mutate each others keys. This ensures we
-// get our own nconf --- yes it is ugly. Thank you node.js for assuming we
-// always want your hidden cache.
-delete require.cache[require.resolve('nconf')];
-
-var nconf = require('nconf');
-var fs = require('fs');
-
-nconf.use('memory');
-
-// Order of precedence: argv, env, config file, defaults
-
-nconf.argv();
-nconf.env('__');
-
-// Load an external (optional) config file
-var config = nconf.get('config');
-if (config) {
-  if (!fs.existsSync(config)) {
-    throw new Error('Could not find config file: ' + config);
-  }
-  conf.use('literal', require(config));
-}
-
-nconf.defaults(require('./config.defaults.js'));
-
-nconf.setObject = function(object, path) {
-  path = path || '';
-
-  Object.keys(object).forEach(function(key) {
-    if(typeof object[key] === '[object]') {
-      nconf.setObject(object[key], path + key + ':');
-    } else {
-      nconf.set(path + key, object[key]);
+module.exports = defaults => {
+  // We use nconf in dependencies, so we have to play games here. If npm/yarn
+  // factors nconf up node_modules then our dependencies get the same nconf
+  // instance as we do, allowing them to mutate each others keys. This ensures we
+  // get our own nconf --- yes it is ugly. Thank you node.js for assuming we
+  // always want your hidden cache.
+  delete require.cache[require.resolve('nconf')];
+  
+  var nconf = require('nconf');
+  var fs = require('fs');
+  
+  nconf.use('memory');
+  
+  // Order of precedence: argv, env, config file, defaults
+  
+  nconf.argv();
+  nconf.env('__');
+  
+  // Load an external (optional) config file
+  var config = nconf.get('config');
+  if (config) {
+    if (!fs.existsSync(config)) {
+      throw new Error('Could not find config file: ' + config);
     }
-  });
-}
+    conf.use('literal', require(config));
+  }
+ 
+  if (defaults) {
+    nconf.defaults(defaults);
+  }
+  
+  nconf.setObject = function(object, path) {
+    path = path || '';
+  
+    Object.keys(object).forEach(function(key) {
+      if(typeof object[key] === '[object]') {
+        nconf.setObject(object[key], path + key + ':');
+      } else {
+        nconf.set(path + key, object[key]);
+      }
+    });
+  };
 
+};
 module.exports = nconf;
